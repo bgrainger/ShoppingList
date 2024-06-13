@@ -1,0 +1,39 @@
+.container {
+	max-width: 500px;
+	margin: 0 auto;
+	padding: 20px;
+  }
+
+  .input-container {
+	display: flex;
+	margin-bottom: 10px;
+  }
+
+  #itemInput {
+	flex: 1;
+	padding: 5px;
+  }
+
+  #addButton {
+	padding: 5px 10px;
+	margin-left: 10px;
+  }
+
+  .category {
+	margin-bottom: 10px;
+  }
+
+  .category h3 {
+	margin: 0;
+  }
+
+  .item {
+	display: flex;
+	align-items: center;
+	margin-bottom: 5px;
+  }
+
+  .item.checked {
+	text-decoration: line-through;
+	color: gray;
+  }
