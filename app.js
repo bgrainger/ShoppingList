@@ -21,6 +21,8 @@ const STORAGE_PREFIX = 'shoppingList:';
 const META_KEY = STORAGE_PREFIX + '_meta';
 const RECENT_CHECKED_LIMIT = 3;
 const SWIPE_THRESHOLD = 100;
+const CHECK_ANIM_MS = 500;
+const UNCHECK_ANIM_MS = 500;
 
 // ---------- Data helpers ----------
 
@@ -236,6 +238,7 @@ function renderList() {
 function createItemRow(item, catIndex) {
   const li = document.createElement('li');
   li.className = 'item-row';
+  li.dataset.itemName = item.name;
 
   const checkbox = document.createElement('div');
   checkbox.className = 'checkbox' + (item.checked ? ' checked' : '');
@@ -275,10 +278,13 @@ function buildCheckedCountBadge(cat) {
 
 function cycleCollapse(catIndex) {
   const cat = currentList.categories[catIndex];
+  const checkedCount = cat.items.filter(i => i.checked).length;
+
   if (cat.collapsed === 'collapsed') {
     cat.collapsed = 'expanded';
   } else if (cat.collapsed === 'expanded') {
-    cat.collapsed = 'expanded-all';
+    // Skip expanded-all if all checked items are already visible
+    cat.collapsed = checkedCount <= RECENT_CHECKED_LIMIT ? 'collapsed' : 'expanded-all';
   } else {
     cat.collapsed = 'collapsed';
   }
@@ -294,10 +300,34 @@ function toggleItem(catIndex, itemName) {
   if (itemIdx === -1) return;
 
   const item = cat.items[itemIdx];
+  const isChecking = !item.checked;
+
+  // Determine if animation is needed (no animation if item stays in place)
+  let needsAnimation = false;
+  if (isChecking) {
+    const unchecked = cat.items.filter(i => !i.checked);
+    needsAnimation = unchecked[unchecked.length - 1].name !== itemName;
+  } else {
+    const checked = cat.items.filter(i => i.checked);
+    const mostRecent = checked.reduce((a, b) => (a.checkedAt > b.checkedAt ? a : b), checked[0]);
+    needsAnimation = mostRecent && mostRecent.name !== itemName;
+  }
+
+  // FLIP step 1: snapshot current positions
+  const oldPositions = new Map();
+  if (needsAnimation) {
+    const section = listContainer.querySelector(`[data-cat-index="${catIndex}"]`);
+    if (section) {
+      section.querySelectorAll('.item-row[data-item-name]').forEach(row => {
+        oldPositions.set(row.dataset.itemName, row.getBoundingClientRect());
+      });
+    }
+  }
+
+  // Update data model
   cat.items.splice(itemIdx, 1);
 
-  if (!item.checked) {
-    // Checking: move to after all unchecked items
+  if (isChecking) {
     item.checked = true;
     item.checkedAt = Date.now();
     const firstCheckedIdx = cat.items.findIndex(i => i.checked);
@@ -307,7 +337,6 @@ function toggleItem(catIndex, itemName) {
       cat.items.splice(firstCheckedIdx, 0, item);
     }
   } else {
-    // Unchecking: move to bottom of unchecked (just before first checked)
     item.checked = false;
     delete item.checkedAt;
     const firstCheckedIdx = cat.items.findIndex(i => i.checked);
@@ -320,6 +349,29 @@ function toggleItem(catIndex, itemName) {
 
   saveList(currentList);
   renderList();
+
+  // FLIP step 2: animate from old positions to new
+  if (needsAnimation && oldPositions.size > 0) {
+    const section = listContainer.querySelector(`[data-cat-index="${catIndex}"]`);
+    if (!section) return;
+
+    const duration = isChecking ? CHECK_ANIM_MS : UNCHECK_ANIM_MS;
+    section.querySelectorAll('.item-row[data-item-name]').forEach(row => {
+      const oldRect = oldPositions.get(row.dataset.itemName);
+      if (!oldRect) return;
+      const newRect = row.getBoundingClientRect();
+      const deltaY = oldRect.top - newRect.top;
+      if (Math.abs(deltaY) < 1) return;
+
+      row.style.transform = `translateY(${deltaY}px)`;
+      row.offsetHeight; // force reflow
+      row.style.transition = `transform ${duration}ms ease-out`;
+      row.style.transform = '';
+      row.addEventListener('transitionend', () => {
+        row.style.transition = '';
+      }, { once: true });
+    });
+  }
 }
 
 // ---------- Delete item / category ----------
