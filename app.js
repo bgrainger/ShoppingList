@@ -21,8 +21,8 @@ const STORAGE_PREFIX = 'shoppingList:';
 const META_KEY = STORAGE_PREFIX + '_meta';
 const RECENT_CHECKED_LIMIT = 3;
 const SWIPE_THRESHOLD = 100;
-const CHECK_ANIM_MS = 500;
-const UNCHECK_ANIM_MS = 500;
+const CHECK_ANIM_MS = 250;
+const UNCHECK_ANIM_MS = 250;
 
 // ---------- Data helpers ----------
 
@@ -356,6 +356,7 @@ function toggleItem(catIndex, itemName) {
     if (!section) return;
 
     const duration = isChecking ? CHECK_ANIM_MS : UNCHECK_ANIM_MS;
+    const toggledRow = section.querySelector(`.item-row[data-item-name="${CSS.escape(itemName)}"]`);
     section.querySelectorAll('.item-row[data-item-name]').forEach(row => {
       const oldRect = oldPositions.get(row.dataset.itemName);
       if (!oldRect) return;
@@ -363,11 +364,15 @@ function toggleItem(catIndex, itemName) {
       const deltaY = oldRect.top - newRect.top;
       if (Math.abs(deltaY) < 1) return;
 
+      if (row === toggledRow) row.style.zIndex = '10';
       row.style.transform = `translateY(${deltaY}px)`;
       row.offsetHeight; // force reflow
       row.style.transition = `transform ${duration}ms ease-out`;
       row.style.transform = '';
       row.addEventListener('transitionend', () => {
+        row.style.transition = '';
+        row.style.zIndex = '';
+      }, { once: true });
         row.style.transition = '';
       }, { once: true });
     });

@@ -563,7 +563,10 @@ body {
 .hidden { display: none !important; }
 
 /* Smooth transitions for checked items */
-.item-row { transition: opacity 0.15s; }
+.item-row {
+  transition: opacity 0.15s;
+  position: relative;
+}
 
 /* ====== New list modal extra ====== */
 #new-list-name {
