@@ -373,8 +373,6 @@ function toggleItem(catIndex, itemName) {
         row.style.transition = '';
         row.style.zIndex = '';
       }, { once: true });
-        row.style.transition = '';
-      }, { once: true });
     });
   }
 }
