@@ -2,25 +2,37 @@
 
 A simple mobile-friendly website that can be installed to the Home Screen on iOS.
 It allows users to maintain multiple shopping lists and quickly add items and check them off on the go.
+Built with plain HTML/CSS/JS (no framework) for simplicity, fast loading, and minimal dependencies. Hosted on GitHub Pages.
 
-Design is inspired heavily by the iOS Reminders app, with a clean and minimal interface.
+Design is inspired heavily by the iOS Reminders app, with a clean and minimal interface. Light mode only. Uses a simple grocery cart icon for the app icon and favicon.
+
+Each list has a custom accent color chosen from a palette of 5–10 attractive colors when the list is created (default: blue). The accent color is used for checkboxes and other highlights. The default "Groceries" list uses green.
 
 Top level items are categories with items nested underneath. No nested hierarchy.
-There's a + button or just an always-visible input field to add new items.
-Within each category, items can be checked off and deleted. Categories themselves can also be deleted.
-Within a category, the unchecked items are shown first. Checking an item crosses it off and moves it below all unchecked items, to the top of the list of checked items. Only the three most recently checked items are shown. Older checked items are hidden.
+Categories are ordered as specified in the initial data load; users can drag-and-drop to reorder categories, and that order is persisted. New categories are added at the bottom.
+
+There is a single global input field at the bottom of the screen (near the onscreen keyboard) to add items.
+Within each category, items can be checked off, renamed, and deleted. Categories themselves can also be deleted.
+Deleting a category deletes all items in it, including their autocomplete history. Deleting an individual item also removes it from autocomplete history.
+Delete is triggered by swipe-to-delete (iOS-style); no confirmation dialog, but the swipe gesture should require deliberate effort.
+
+Within a category, the unchecked items are shown first. Checking an item moves it below all unchecked items, to the top of the list of checked items. Only the three most recently checked items are shown by default. Tapping the category header cycles through three states: collapsed, expanded with recent checked items, and expanded with all checked items.
 Unchecking an item (e.g., undoing an accidental check) moves it to the bottom of the list of unchecked items, above all checked items.
+Unchecked item order within a category is fixed (not manually reorderable).
+
+Tapping an item's text (not the checkbox) puts it into inline edit mode, allowing the user to rename it. An item name must be unique within the list (across all categories); attempting to rename to a duplicate shows an error.
 
 Storage is local only right now but should be designed in a way that could be easily extended to sync across devices in the future. Data is stored in localStorage as JSON.
 
 The page should be designed to load instantly from cache after the first load, with all assets cached by a service worker. It should be fully functional offline.
 
-The app remembers all historical items. Entering text shows an autocomplete of all historical items that match the input. We can assume there are less than 500 or so so a simple in-memory search is sufficient.
-Selecting an existing item from the autocomplete unchecks it within its current category. In this case (text entry) it goes to the top of the unchecked list, i.e., first in that category.
-Typing out a new item in full and pressing Enter/Return/Accept creates a new item. For now, it should prompt for the category to add it to, showing all existing categories and allowing the user to enter a new one.
+The app remembers all historical items within the current list. Entering text in the global input shows an autocomplete of historical items from the current list that match the input. We can assume there are less than 500 or so so a simple in-memory search is sufficient.
+Selecting an existing item from the autocomplete unchecks it within its current category and moves it to the top of the unchecked list in that category.
+If the user types a name that exactly matches an existing item (checked or unchecked) and presses Enter, it behaves the same as selecting the autocomplete match — the existing item is unchecked and moved to the top.
+Typing out a genuinely new item name and pressing Enter creates a new item at the top of the unchecked list in the chosen category. A modal sheet appears showing all existing categories and a text box to enter a new category name.
 In the future, I'd like to invoke an AI model to guess the best category based on the item text and historical data, but for now we can just prompt the user to select or enter a category.
 
-There's some kind of drop down to select between different lists. This is probably hidden behind a hamburger menu because it's not common functionality. The user can also create new lists and delete existing ones. Each list is stored separately in localStorage, and the app loads the last list on startup.
+There's some kind of drop down to select between different lists. This is probably hidden behind a hamburger menu because it's not common functionality. The user can also create new lists, rename existing lists, and delete existing ones. Each list is stored as its own key in localStorage, with the list name as the key and the JSON data as the value. Users can create as many lists as they want (limited only by browser localStorage capacity). The app loads the last-used list on startup.
 
 When the app loads for the first time, it creates a "Groceries" list. That list has the following categories and items, all checked off by default.
 
@@ -43,51 +55,11 @@ Seafood: Salmon, Shrimp, Tilapia
 
 That gets written into localStorage as the initial data structure for the "Groceries" list. The user can then modify it as they like, and all changes are persisted in localStorage.
 
-For readability, checked items are not crossed out but are instead shown with a lighter text color (still readable). The iOS rounded checkboxes are used if possible, empty for unchecked items and filled for checked items. Tapping the checkbox toggles the checked state.
+For readability, checked items are not crossed out but are instead shown with a lighter text color (still readable). The iOS rounded checkboxes are used, empty for unchecked items and filled (in the list's accent color) for checked items. Tapping the checkbox toggles the checked state.
 
-Each category is collapsible to save space. Tapping the category name toggles the visibility of the items within it. The collapsed/expanded state of each category is also persisted in localStorage.
+Each category is collapsible to save space. Tapping the category name cycles through: collapsed → expanded (showing up to 3 recent checked items) → expanded (showing all checked items) → collapsed. The collapse state of each category is persisted in localStorage. All categories default to expanded on first load.
 
 It's easy to dismiss the keyboard (or it dismisses automatically) after adding an item, so it doesn't get in the way of checking off items. Tapping outside the input field or pressing Enter/Return/Accept should dismiss the keyboard.
 
----
-
-## Open Questions
-
-### Tech Stack
-1. **Framework**: Plain HTML/CSS/JS, or something like Vue/React/Svelte?
-2. **Hosting**: GitHub Pages, Netlify, local file serving, or something else?
-
-### Visual Design
-3. **Dark mode**: Support dark mode (via `prefers-color-scheme`), or light-only?
-4. **App icon / favicon**: Any preference, or should we pick a simple grocery/list icon?
-5. **Accent color**: iOS Reminders uses blue for checkboxes. Same, or a different color?
-
-### Category Behavior
-6. **Category ordering**: Alphabetical, insertion order, or manually reorderable (drag-to-sort)?
-7. **Default collapse state**: On first load of a new list, are categories expanded or collapsed?
-8. **Deleting a category**: Does this delete all items in it (including history), or just hide the category and keep items in autocomplete history?
-
-### Item Behavior
-9. **New item placement**: Autocomplete-selected items go to the top of unchecked. Where do brand-new items go — top or bottom of unchecked in that category?
-10. **Item editing**: Can items be renamed after creation, or only added/deleted/checked?
-11. **Item reordering**: Can unchecked items be manually reordered within a category, or is the order fixed?
-12. **Viewing older checked items**: Only the 3 most recently checked items are shown. Is there a "Show all checked" toggle, or are they only recoverable via the autocomplete/add input?
-13. **Duplicate handling**: What if the user types a name that exactly matches an existing unchecked item in the same category? Ignore? Focus that item?
-
-### Add-Item UX
-14. **Input location**: One global input field at the top/bottom of the page, or one per category?
-15. **Category prompt UI**: When adding a new item and prompting for category — modal/action sheet, inline dropdown, or something else?
-16. **Autocomplete scope**: "Historical items" — across all lists, or only the current list?
-17. **Typing an exact match vs. selecting autocomplete**: If the user types "Milk" and presses Enter (without tapping the autocomplete suggestion), should it behave like selecting the autocomplete match (uncheck existing), or create a duplicate?
-
-### Delete UX
-18. **Delete gesture**: Swipe-to-delete (iOS-style), a visible delete button, long-press menu, or edit mode?
-19. **Confirmation**: Should deleting a list or category require confirmation?
-
-### Lists
-20. **Renaming lists**: Can existing lists be renamed?
-21. **List limit**: Any practical cap, or unlimited?
-
-### Offline / PWA
-22. **Update strategy**: When a new version is deployed, should the service worker auto-update on next visit, or prompt the user?
+The page should be designed to load instantly from cache after the first load, with all assets cached by a service worker. It should be fully functional offline. The service worker auto-updates on the next visit when a new version is deployed.
 
