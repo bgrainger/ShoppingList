@@ -49,3 +49,45 @@ Each category is collapsible to save space. Tapping the category name toggles th
 
 It's easy to dismiss the keyboard (or it dismisses automatically) after adding an item, so it doesn't get in the way of checking off items. Tapping outside the input field or pressing Enter/Return/Accept should dismiss the keyboard.
 
+---
+
+## Open Questions
+
+### Tech Stack
+1. **Framework**: Plain HTML/CSS/JS, or something like Vue/React/Svelte?
+2. **Hosting**: GitHub Pages, Netlify, local file serving, or something else?
+
+### Visual Design
+3. **Dark mode**: Support dark mode (via `prefers-color-scheme`), or light-only?
+4. **App icon / favicon**: Any preference, or should we pick a simple grocery/list icon?
+5. **Accent color**: iOS Reminders uses blue for checkboxes. Same, or a different color?
+
+### Category Behavior
+6. **Category ordering**: Alphabetical, insertion order, or manually reorderable (drag-to-sort)?
+7. **Default collapse state**: On first load of a new list, are categories expanded or collapsed?
+8. **Deleting a category**: Does this delete all items in it (including history), or just hide the category and keep items in autocomplete history?
+
+### Item Behavior
+9. **New item placement**: Autocomplete-selected items go to the top of unchecked. Where do brand-new items go — top or bottom of unchecked in that category?
+10. **Item editing**: Can items be renamed after creation, or only added/deleted/checked?
+11. **Item reordering**: Can unchecked items be manually reordered within a category, or is the order fixed?
+12. **Viewing older checked items**: Only the 3 most recently checked items are shown. Is there a "Show all checked" toggle, or are they only recoverable via the autocomplete/add input?
+13. **Duplicate handling**: What if the user types a name that exactly matches an existing unchecked item in the same category? Ignore? Focus that item?
+
+### Add-Item UX
+14. **Input location**: One global input field at the top/bottom of the page, or one per category?
+15. **Category prompt UI**: When adding a new item and prompting for category — modal/action sheet, inline dropdown, or something else?
+16. **Autocomplete scope**: "Historical items" — across all lists, or only the current list?
+17. **Typing an exact match vs. selecting autocomplete**: If the user types "Milk" and presses Enter (without tapping the autocomplete suggestion), should it behave like selecting the autocomplete match (uncheck existing), or create a duplicate?
+
+### Delete UX
+18. **Delete gesture**: Swipe-to-delete (iOS-style), a visible delete button, long-press menu, or edit mode?
+19. **Confirmation**: Should deleting a list or category require confirmation?
+
+### Lists
+20. **Renaming lists**: Can existing lists be renamed?
+21. **List limit**: Any practical cap, or unlimited?
+
+### Offline / PWA
+22. **Update strategy**: When a new version is deployed, should the service worker auto-update on next visit, or prompt the user?
+
