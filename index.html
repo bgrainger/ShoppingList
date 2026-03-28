@@ -20,6 +20,17 @@
       <svg width="22" height="18" viewBox="0 0 22 18"><rect y="0" width="22" height="2" rx="1" fill="currentColor"/><rect y="8" width="22" height="2" rx="1" fill="currentColor"/><rect y="16" width="22" height="2" rx="1" fill="currentColor"/></svg>
     </button>
     <h1 id="list-title">Shopping List</h1>
+    <button id="filter-btn" class="header-btn" aria-label="Toggle filter">
+      <svg id="filter-icon-eye" width="22" height="16" viewBox="0 0 22 16" fill="none">
+        <path d="M11 1C6 1 2 8 2 8s4 7 9 7 9-7 9-7-4-7-9-7z" stroke="currentColor" stroke-width="1.8" fill="none"/>
+        <circle cx="11" cy="8" r="3" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      </svg>
+      <svg id="filter-icon-eye-off" width="22" height="16" viewBox="0 0 22 16" fill="none" class="hidden">
+        <path d="M11 1C6 1 2 8 2 8s4 7 9 7 9-7 9-7-4-7-9-7z" stroke="currentColor" stroke-width="1.8" fill="none"/>
+        <circle cx="11" cy="8" r="3" stroke="currentColor" stroke-width="1.8" fill="none"/>
+        <line x1="2" y1="14" x2="20" y2="2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </button>
   </header>
 
   <main id="list-container"></main>

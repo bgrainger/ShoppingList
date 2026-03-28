@@ -99,6 +99,8 @@ function createDefaultGroceries() {
 
 let currentList = null;
 let pendingItemName = null; // for the category modal
+let filterMode = false;
+let filteredCategoryNames = new Set();
 
 // ---------- DOM references ----------
 
@@ -114,6 +116,9 @@ const newCategoryInput = document.getElementById('new-category-input');
 const newCategoryBtn = document.getElementById('new-category-btn');
 
 const menuBtn = document.getElementById('menu-btn');
+const filterBtn = document.getElementById('filter-btn');
+const filterIconEye = document.getElementById('filter-icon-eye');
+const filterIconEyeOff = document.getElementById('filter-icon-eye-off');
 const menuDrawer = document.getElementById('menu-drawer');
 const menuOverlay = document.getElementById('menu-overlay');
 const menuClose = document.getElementById('menu-close');
@@ -161,6 +166,9 @@ function loadList(name) {
 
   document.documentElement.style.setProperty('--accent', currentList.color);
   listTitle.textContent = currentList.name;
+  filterMode = false;
+  filteredCategoryNames = new Set();
+  updateFilterIcon();
   renderList();
 }
 
@@ -171,6 +179,7 @@ function renderList() {
   if (!currentList) return;
 
   currentList.categories.forEach((cat, catIndex) => {
+    if (filterMode && !filteredCategoryNames.has(cat.name)) return;
     const section = document.createElement('section');
     section.className = 'category-section';
     section.dataset.catIndex = catIndex;
@@ -272,6 +281,30 @@ function buildCheckedCountBadge(cat) {
   const checkedCount = cat.items.filter(i => i.checked).length;
   if (checkedCount === 0) return '';
   return `<span class="checked-count">${checkedCount} ✓</span>`;
+}
+
+// ---------- Filter ----------
+
+function toggleFilter() {
+  if (!filterMode) {
+    // Entering filter mode: snapshot categories with at least one unchecked item
+    filteredCategoryNames = new Set(
+      currentList.categories
+        .filter(cat => cat.items.some(i => !i.checked))
+        .map(cat => cat.name)
+    );
+    filterMode = true;
+  } else {
+    filterMode = false;
+    filteredCategoryNames = new Set();
+  }
+  updateFilterIcon();
+  renderList();
+}
+
+function updateFilterIcon() {
+  filterIconEye.classList.toggle('hidden', filterMode);
+  filterIconEyeOff.classList.toggle('hidden', !filterMode);
 }
 
 // ---------- Category collapse ----------
@@ -905,6 +938,8 @@ function saveNewOrRenamedList() {
 // ---------- Event listeners ----------
 
 function setupEventListeners() {
+  // Filter button
+  filterBtn.addEventListener('click', toggleFilter);
   // Add item input
   addInput.addEventListener('input', () => {
     showAutocomplete(addInput.value);
